@@ -460,6 +460,60 @@
   .legend-dot { width: 8px; height: 8px; border-radius: 3px; }
 
   /* ══════════════════════════════════════════════
+     Org Chart
+     ══════════════════════════════════════════════ */
+  .org-chart {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 24px 20px; overflow-x: auto;
+  }
+  .org-root {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow-card);
+    padding: 14px 24px; text-align: center;
+    border-top: 3px solid var(--brand-25);
+    cursor: pointer; transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .org-root:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .org-root:active { box-shadow: 0 0 0 3px oklch(from var(--brand-25) l c h / var(--ring-alpha)); }
+  .org-root-name { font-size: 15px; font-weight: 700; color: var(--fg); }
+  .org-root-meta { font-size: 11px; color: var(--muted-fg); margin-top: 2px; }
+
+  .org-trunk {
+    width: 2px; height: 28px;
+    background: var(--border);
+  }
+  .org-branches {
+    position: relative;
+    display: flex; align-items: flex-start; gap: 0;
+  }
+  /* horizontal bar across the top of all leaves */
+  .org-branches::before {
+    content: ''; position: absolute; top: 0; left: 10%; right: 10%;
+    height: 2px; background: var(--border);
+  }
+  .org-leaf-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 140px; padding: 0 8px;
+  }
+  /* vertical drop from horizontal bar to leaf card */
+  .org-leaf-wrap::before {
+    content: ''; width: 2px; height: 24px;
+    background: var(--border);
+  }
+  .org-leaf {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: var(--shadow-card);
+    padding: 10px 14px; text-align: center;
+    border-top: 3px solid var(--alt-purple);
+    cursor: pointer; transition: box-shadow 0.2s, transform 0.2s;
+    width: 100%;
+  }
+  .org-leaf:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .org-leaf:active { box-shadow: 0 0 0 3px oklch(from var(--alt-purple) l c h / var(--ring-alpha)); }
+  .org-leaf-name { font-size: 12px; font-weight: 600; color: var(--card-fg); }
+  .org-leaf-meta { font-size: 10px; color: var(--muted-fg); margin-top: 2px; }
+
+  /* ══════════════════════════════════════════════
      Responsive
      ══════════════════════════════════════════════ */
   @media (max-width: 1100px) { .team-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -476,7 +530,15 @@
     .step-arrow::after { right: auto; left: -5px; top: auto; bottom: 0; border: 5px solid transparent; border-top-color: var(--muted-fg); border-left-color: transparent; }
     .cmd-grid { grid-template-columns: 1fr; }
     .skills-grid { grid-template-columns: 1fr; }
-    .section-header, .cpo-wrap, .skills-grid, .pipelines-wrap, .cmd-wrap, .team-grid { padding-left: 16px; padding-right: 16px; }
+    .section-header, .cpo-wrap, .skills-grid, .pipelines-wrap, .cmd-wrap, .team-grid, .org-chart { padding-left: 16px; padding-right: 16px; }
+    .org-chart { overflow-x: visible; }
+    .org-branches { flex-direction: column; align-items: flex-start; padding-left: 24px; }
+    .org-branches::before { display: none; }
+    .org-leaf-wrap { flex-direction: row; align-items: center; padding: 0; min-width: 0; width: 100%; }
+    .org-leaf-wrap::before { width: 24px; height: 2px; flex-shrink: 0; }
+    .org-leaf { text-align: left; }
+    /* vertical trunk running alongside all leaves */
+    .org-branches { position: relative; padding-left: 24px; border-left: 2px solid var(--border); margin-left: 0; gap: 10px; }
   }
   @media (max-width: 500px) { .team-grid { grid-template-columns: 1fr; } }
 </style>
@@ -511,6 +573,46 @@
 
 <!-- ══ Team Architecture ══════════════════════ -->
 <div class="section-header">Team Architecture</div>
+
+<div class="org-chart">
+  <div class="org-root" onclick="scrollToAgent(null)" data-search="kogy cpo orchestrator sonnet">
+    <div class="org-root-name">Kogy <span class="badge badge-cpo">CPO</span></div>
+    <div class="org-root-meta">Sonnet 4.6 &middot; Heartbeat every 30m</div>
+  </div>
+  <div class="org-trunk"></div>
+  <div class="org-branches">
+    <div class="org-leaf-wrap">
+      <div class="org-leaf" onclick="scrollToAgent('pipeline')">
+        <div class="org-leaf-name">Pipeline Agent <span class="badge badge-haiku">Haiku</span></div>
+        <div class="org-leaf-meta">Every 30m</div>
+      </div>
+    </div>
+    <div class="org-leaf-wrap">
+      <div class="org-leaf" onclick="scrollToAgent('copywriter')">
+        <div class="org-leaf-name">Copywriter <span class="badge badge-sonnet">Sonnet</span></div>
+        <div class="org-leaf-meta">On-demand</div>
+      </div>
+    </div>
+    <div class="org-leaf-wrap">
+      <div class="org-leaf" onclick="scrollToAgent('linkedin')">
+        <div class="org-leaf-name">LinkedIn Agent <span class="badge badge-sonnet">Sonnet</span></div>
+        <div class="org-leaf-meta">Daily 2pm PST</div>
+      </div>
+    </div>
+    <div class="org-leaf-wrap">
+      <div class="org-leaf" onclick="scrollToAgent('newsletter')">
+        <div class="org-leaf-name">Newsletter Agent <span class="badge badge-sonnet">Sonnet</span></div>
+        <div class="org-leaf-meta">Daily 7am UTC</div>
+      </div>
+    </div>
+    <div class="org-leaf-wrap">
+      <div class="org-leaf" onclick="scrollToAgent('followup')">
+        <div class="org-leaf-name">Follow-up Agent <span class="badge badge-haiku">Haiku</span></div>
+        <div class="org-leaf-meta">Daily 5pm UTC</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="cpo-wrap">
   <div class="cpo-card" data-search="kogy cpo chief pipeline officer orchestrator strategy boss communications skills">
@@ -953,12 +1055,23 @@ function filter(q) {
   q = q.toLowerCase().trim();
   if (!q) { document.querySelectorAll('.dimmed,.highlighted').forEach(e => e.classList.remove('dimmed','highlighted')); return; }
   const m = el => (el.dataset.search||'').includes(q) || el.textContent.toLowerCase().includes(q);
+  document.querySelectorAll('.org-root,.org-leaf').forEach(c => c.classList.toggle('dimmed', !m(c)));
   document.querySelector('.cpo-card').classList.toggle('dimmed', !m(document.querySelector('.cpo-card')));
   document.querySelectorAll('.agent-card').forEach(c => c.classList.toggle('dimmed', !m(c)));
   document.querySelectorAll('.res-card').forEach(c => { const hit = m(c); c.classList.toggle('dimmed', !hit); c.classList.toggle('highlighted', hit); });
   document.querySelectorAll('.skill-card').forEach(c => { const hit = m(c); c.classList.toggle('dimmed', !hit); c.classList.toggle('highlighted', hit); });
   document.querySelectorAll('.pipeline-card').forEach(c => c.classList.toggle('dimmed', !m(c)));
   document.querySelectorAll('.cmd-card').forEach(c => c.classList.toggle('dimmed', !m(c)));
+}
+
+function scrollToAgent(agent) {
+  let target;
+  if (agent) {
+    target = document.querySelector(`.agent-col[data-agent="${agent}"]`);
+  } else {
+    target = document.querySelector('.cpo-card');
+  }
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 renderCommandRef();
