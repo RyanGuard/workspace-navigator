@@ -1,81 +1,272 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OpenClaw Workspace Navigator — Kogy CPO Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* ── Kognitos Lattice Design System Tokens ─── */
+  :root {
+    --radius: 0.25rem;
+    --radius-sm: 0.25rem;
+    --radius-md: calc(0.25rem + 2px);
+    --radius-lg: calc(0.25rem + 4px);
+    --radius-xl: calc(0.25rem + 4px);
+    --tracking-normal: 0.01em;
+
+    /* Brand Palette */
+    --brand: oklch(0.963 0.166 113.862);
+    --brand-10: oklch(0.892 0.165 114.154);
+    --brand-15: oklch(0.858 0.164 114.307);
+    --brand-20: oklch(0.822 0.162 114.491);
+    --brand-25: oklch(0.785 0.16 114.696);
+    --brand-30: oklch(0.714 0.154 115.167);
+    --brand-35: oklch(0.676 0.15 115.468);
+    --brand-40: oklch(0.637 0.144 115.822);
+    --brand-45: oklch(0.599 0.137 116.248);
+    --brand-50: oklch(0.599 0.137 116.248);
+    --brand-55: oklch(0.555 0.127 115.832);
+    --brand-60: oklch(0.509 0.116 115.905);
+
+    /* Alternate Palette (for data viz / agent accents) */
+    --alternate-1: oklch(0.776 0.003 264.539);
+    --alternate-2: oklch(0.65 0.226 27.094);
+    --alternate-3: oklch(0.763 0.165 60.077);
+    --alternate-4: oklch(0.875 0.165 91.772);
+    --alternate-5: oklch(0.741 0.199 147.068);
+    --alternate-6: oklch(0.759 0.113 210.52);
+    --alternate-7: oklch(0.682 0.167 246.753);
+    --alternate-8: oklch(0.733 0.158 302.329);
+    --alternate-9: oklch(0.779 0.146 350.729);
+
+    /* Status */
+    --success: oklch(0.635 0.185 147.775);
+    --warning: oklch(0.769 0.165 70.08);
+    --destructive: oklch(0.577 0.245 27.325);
+    --informative: oklch(0.615 0.133 261.34);
+    --link: oklch(0.551 0.124 239.032);
+  }
+
+  /* ── Light Mode ─────────────────────────── */
+  :root:not(.dark) {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --primary: var(--brand-15);
+    --primary-foreground: oklch(0.269 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --surface: oklch(0.97 0 0);
+    --surface-elevated: oklch(1 0 0);
+  }
+
+  /* ── Dark Mode ──────────────────────────── */
+  .dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0.001 106.424);
+    --primary: var(--brand);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.372 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --surface: oklch(0.18 0 0);
+    --surface-elevated: oklch(0.235 0 0);
+  }
+
+  /* ── Agent Accent Mapping ───────────────── */
+  :root {
+    --accent-cpo: var(--brand-25);
+    --accent-agent: var(--alternate-7);
+    --accent-pipeline: var(--alternate-5);
+    --accent-tool: var(--alternate-3);
+    --accent-skill: var(--alternate-6);
+    --accent-subagent: var(--alternate-8);
+  }
+
+  /* ── Base Reset ─────────────────────────── */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0f1117;
-    color: #e2e8f0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--background);
+    color: var(--foreground);
     min-height: 100vh;
+    letter-spacing: var(--tracking-normal);
+    line-height: 1.5;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  :root {
-    --bg: #0f1117;
-    --card: #252c3d;
-    --card-hover: #2d3548;
-    --card-border: #364156;
-    --text: #e2e8f0;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
-    --accent-agent: #8b5cf6;
-    --accent-skill: #06b6d4;
-    --accent-tool: #f59e0b;
-    --accent-pipeline: #10b981;
-    --accent-subagent: #ec4899;
-    --edge-color: #475569;
-  }
-
-  /* ── Search Bar ────────────────────────── */
-  .search-bar {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(15, 17, 23, 0.95);
+  /* ── Topbar ─────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: oklch(from var(--background) l c h / 95%);
     backdrop-filter: blur(12px);
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--card-border);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
     display: flex; align-items: center; gap: 16px;
   }
-  .search-bar h1 { font-size: 18px; font-weight: 700; white-space: nowrap; letter-spacing: -0.3px; }
-  .search-bar input {
-    flex: 1; max-width: 400px;
-    background: var(--card); border: 1px solid var(--card-border); border-radius: 8px;
-    color: var(--text); font-size: 14px; padding: 8px 14px; outline: none;
-    transition: border-color 0.2s;
+  .topbar-brand {
+    display: flex; align-items: center; gap: 10px;
+    white-space: nowrap;
   }
-  .search-bar input:focus { border-color: var(--accent-agent); }
-  .search-bar input::placeholder { color: var(--text-dim); }
-  .legend { display: flex; gap: 14px; margin-left: auto; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+  .topbar-logo {
+    width: 28px; height: 28px; border-radius: var(--radius-md);
+    background: var(--brand-30);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: var(--primary-foreground);
+  }
+  .topbar-title {
+    font-size: 15px; font-weight: 600;
+    color: var(--foreground);
+  }
+  .topbar-subtitle {
+    font-size: 12px; font-weight: 400;
+    color: var(--muted-foreground);
+    margin-left: -4px;
+  }
 
-  /* ── Section Headers ───────────────────── */
+  /* Search Input */
+  .search-input {
+    flex: 1; max-width: 400px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--foreground);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 7px 12px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-input:focus {
+    border-color: var(--brand-30);
+    box-shadow: 0 0 0 3px oklch(from var(--brand-30) l c h / 20%);
+  }
+  .search-input::placeholder { color: var(--muted-foreground); }
+
+  /* Theme Toggle */
+  .theme-toggle {
+    margin-left: auto;
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--muted-foreground);
+    font-family: inherit;
+    font-size: 12px; font-weight: 500;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .theme-toggle:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--muted-foreground); font-weight: 500;
+  }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 2px;
+  }
+
+  /* ── Section Headers ────────────────────── */
   .section-header {
     padding: 28px 24px 12px;
-    font-size: 13px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.5px; color: var(--text-dim);
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--muted-foreground);
   }
 
-  /* ── CPO Card (top) ────────────────────── */
+  /* ── Badge Component ────────────────────── */
+  .badge {
+    display: inline-flex; align-items: center;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: var(--radius-sm);
+    letter-spacing: 0.3px; text-transform: uppercase;
+    line-height: 1.4;
+  }
+  .badge-brand { background: oklch(from var(--brand-30) l c h / 20%); color: var(--brand-25); }
+  .badge-agent { background: oklch(from var(--alternate-7) l c h / 15%); color: var(--alternate-7); }
+  .badge-pipeline { background: oklch(from var(--alternate-5) l c h / 15%); color: var(--alternate-5); }
+  .badge-tool { background: oklch(from var(--alternate-3) l c h / 15%); color: var(--alternate-3); }
+  .badge-skill { background: oklch(from var(--alternate-6) l c h / 15%); color: var(--alternate-6); }
+  .badge-subagent { background: oklch(from var(--alternate-8) l c h / 15%); color: var(--alternate-8); }
+  .badge-success { background: oklch(from var(--success) l c h / 15%); color: var(--success); }
+  .badge-warning { background: oklch(from var(--alternate-3) l c h / 15%); color: var(--alternate-3); }
+  .badge-model-haiku { background: oklch(from var(--alternate-6) l c h / 15%); color: var(--alternate-6); }
+  .badge-model-sonnet { background: oklch(from var(--alternate-7) l c h / 15%); color: var(--alternate-7); }
+  .badge-solid {
+    color: oklch(0.15 0 0);
+  }
+
+  /* ── Card Component ─────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: opacity 0.2s;
+  }
+  .card.dimmed { opacity: 0.1; }
+  .card-header { padding: 16px 20px 12px; }
+  .card-content { padding: 0 20px 16px; }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--card-foreground); }
+  .card-description { font-size: 13px; color: var(--muted-foreground); line-height: 1.5; margin-top: 4px; }
+
+  /* ── CPO Card ───────────────────────────── */
   .cpo-row { padding: 0 24px 16px; }
   .cpo-card {
-    background: var(--card); border-radius: 10px; padding: 20px 24px;
-    border-left: 4px solid var(--accent-agent);
-    display: flex; align-items: center; gap: 20px;
-    transition: opacity 0.3s;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--brand-30);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    display: flex; align-items: flex-start; gap: 20px;
+    transition: opacity 0.2s;
   }
-  .cpo-card.dimmed { opacity: 0.12; }
+  .cpo-card.dimmed { opacity: 0.1; }
   .cpo-info { flex: 1; }
-  .cpo-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
-  .cpo-title .badge { font-size: 10px; background: var(--accent-agent); color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-  .cpo-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-  .cpo-meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
-  .cpo-meta-item { font-size: 11px; color: var(--text-dim); }
-  .cpo-meta-item strong { color: var(--text-muted); }
+  .cpo-title {
+    font-size: 18px; font-weight: 700;
+    color: var(--foreground);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .cpo-desc { font-size: 13px; color: var(--muted-foreground); line-height: 1.6; margin-top: 6px; }
+  .cpo-meta {
+    display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap;
+  }
+  .cpo-meta-item {
+    font-size: 12px; color: var(--muted-foreground);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .cpo-meta-item strong { color: var(--foreground); font-weight: 500; }
 
-  /* ── Agent Columns ─────────────────────── */
+  /* ── Agent Grid ─────────────────────────── */
   .team-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -83,43 +274,57 @@
     padding: 0 24px 24px;
   }
   .agent-column { display: flex; flex-direction: column; gap: 8px; }
-  .agent-card {
-    background: var(--card); border-radius: 10px; padding: 14px 16px;
-    border-top: 3px solid var(--accent-subagent);
-    transition: opacity 0.3s;
-  }
-  .agent-card.dimmed { opacity: 0.12; }
-  .agent-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
-  .agent-name .model-tag {
-    font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px;
-    text-transform: uppercase; letter-spacing: 0.3px;
-  }
-  .model-haiku { background: rgba(6,182,212,0.2); color: #22d3ee; }
-  .model-sonnet { background: rgba(139,92,246,0.2); color: #a78bfa; }
-  .agent-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 6px; }
-  .agent-schedule { font-size: 10px; color: #34d399; font-weight: 600; }
 
-  /* ── Resource Cards (inside agent columns) */
-  .resource-card {
-    background: #1a2030; border-radius: 8px; padding: 10px 12px;
-    border-left: 3px solid transparent;
-    cursor: pointer; transition: opacity 0.3s, transform 0.15s;
+  .agent-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent-agent);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    transition: opacity 0.2s;
   }
-  .resource-card:hover { transform: translateX(3px); }
-  .resource-card.dimmed { opacity: 0.12; }
-  .resource-card.highlighted { box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
+  .agent-card.dimmed { opacity: 0.1; }
+  .agent-name {
+    font-size: 14px; font-weight: 600;
+    color: var(--card-foreground);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .agent-desc {
+    font-size: 12px; color: var(--muted-foreground);
+    line-height: 1.5; margin-top: 4px;
+  }
+  .agent-schedule {
+    font-size: 11px; color: var(--success);
+    font-weight: 600; margin-top: 6px;
+  }
+
+  /* ── Resource Cards ─────────────────────── */
+  .resource-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: opacity 0.2s, background 0.15s;
+  }
+  .resource-card:hover { background: var(--surface-elevated); }
+  .resource-card.dimmed { opacity: 0.1; }
+  .resource-card.highlighted {
+    box-shadow: 0 0 0 2px oklch(from var(--brand-25) l c h / 40%);
+  }
   .rc-pipeline { border-left-color: var(--accent-pipeline); }
   .rc-tool { border-left-color: var(--accent-tool); }
   .rc-skill { border-left-color: var(--accent-skill); }
   .rc-subagent { border-left-color: var(--accent-subagent); }
-  .rc-label { font-size: 11px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
-  .rc-label .rc-badge {
-    font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
-    text-transform: uppercase; color: #fff; letter-spacing: 0.3px;
+  .rc-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--card-foreground);
+    display: flex; align-items: center; gap: 6px;
   }
-  .rc-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .rc-desc { font-size: 11px; color: var(--muted-foreground); margin-top: 2px; }
 
-  /* ── Skills Section (Kogy-managed) ──────── */
+  /* ── Skills Section ─────────────────────── */
   .skills-row {
     padding: 0 24px 24px;
     display: grid;
@@ -127,119 +332,235 @@
     gap: 10px;
   }
   .skill-card {
-    background: var(--card); border-radius: 8px; padding: 12px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-left: 3px solid var(--accent-skill);
-    cursor: pointer; transition: opacity 0.3s;
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
   }
-  .skill-card.dimmed { opacity: 0.12; }
-  .skill-card.highlighted { box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
-  .skill-name { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-  .skill-name .s-badge { font-size: 8px; background: var(--accent-skill); color: #fff; padding: 1px 5px; border-radius: 3px; font-weight: 700; text-transform: uppercase; }
-  .skill-desc { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+  .skill-card.dimmed { opacity: 0.1; }
+  .skill-card.highlighted {
+    box-shadow: 0 0 0 2px oklch(from var(--brand-25) l c h / 40%);
+  }
+  .skill-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--card-foreground);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .skill-desc { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; line-height: 1.4; }
 
-  /* ── Pipeline Flows ────────────────────── */
+  /* ── Pipeline Flows ─────────────────────── */
   .pipelines-container { padding: 0 24px 20px; }
   .pipeline-flow {
-    background: var(--card); border-radius: 10px; padding: 18px 20px;
-    margin-bottom: 14px; transition: opacity 0.3s;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    transition: opacity 0.2s;
   }
-  .pipeline-flow.dimmed { opacity: 0.12; }
-  .pipeline-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-  .pipeline-title { font-size: 14px; font-weight: 700; }
-  .pipeline-meta { font-size: 11px; color: var(--text-dim); }
-  .pipeline-schedule {
-    font-size: 10px; background: rgba(16,185,129,0.15); color: #34d399;
-    padding: 2px 8px; border-radius: 4px; font-weight: 600;
+  .pipeline-flow.dimmed { opacity: 0.1; }
+  .pipeline-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px; flex-wrap: wrap;
   }
-  .pipeline-agent-tag {
-    font-size: 10px; background: rgba(236,72,153,0.15); color: #f472b6;
-    padding: 2px 8px; border-radius: 4px; font-weight: 600;
+  .pipeline-title { font-size: 14px; font-weight: 600; color: var(--card-foreground); }
+  .pipeline-meta { font-size: 11px; color: var(--muted-foreground); }
+  .flow-steps {
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto; padding-bottom: 4px;
   }
-  .flow-steps { display: flex; align-items: center; gap: 0; overflow-x: auto; padding-bottom: 4px; }
   .step {
-    flex-shrink: 0; background: #1a2030; border: 1px solid var(--card-border);
-    border-radius: 6px; padding: 8px 14px; font-size: 11px; font-weight: 600;
-    color: var(--text); text-align: center; min-width: 110px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-size: 12px; font-weight: 500;
+    color: var(--card-foreground);
+    text-align: center; min-width: 110px;
   }
-  .step.decision { border-style: dashed; border-color: #f59e0b; background: rgba(245,158,11,0.06); }
-  .step .tool-badge { display: block; font-size: 9px; color: #f59e0b; font-weight: 700; margin-top: 3px; }
-  .step .model-badge { display: block; font-size: 9px; color: var(--accent-subagent); font-weight: 600; margin-top: 2px; }
-  .step-arrow { flex-shrink: 0; width: 32px; height: 2px; background: var(--edge-color); position: relative; }
-  .step-arrow::after { content: ''; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left-color: var(--edge-color); }
+  .step.decision {
+    border-style: dashed;
+    border-color: var(--alternate-3);
+    background: oklch(from var(--alternate-3) l c h / 5%);
+  }
+  .step .tool-badge {
+    display: block; font-size: 10px;
+    color: var(--alternate-3);
+    font-weight: 600; margin-top: 3px;
+  }
+  .step .model-badge {
+    display: block; font-size: 10px;
+    color: var(--alternate-8);
+    font-weight: 500; margin-top: 2px;
+  }
+  .step-arrow {
+    flex-shrink: 0; width: 28px; height: 2px;
+    background: var(--border); position: relative;
+  }
+  .step-arrow::after {
+    content: ''; position: absolute;
+    right: -1px; top: -4px;
+    border: 5px solid transparent;
+    border-left-color: var(--muted-foreground);
+  }
 
-  /* ── Command Reference ─────────────────── */
+  /* ── Command Reference ──────────────────── */
   .cmd-container { padding: 0 24px 40px; }
   .cmd-category {
-    font-size: 12px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: var(--text-dim); margin: 20px 0 10px;
-    padding-bottom: 6px; border-bottom: 1px solid rgba(100,116,139,0.2);
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--muted-foreground);
+    margin: 24px 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
   }
-  .cmd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 10px; }
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 10px;
+  }
   .cmd-card {
-    background: var(--card); border-radius: 8px; padding: 14px 16px;
-    transition: opacity 0.3s, box-shadow 0.3s;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    transition: opacity 0.2s, box-shadow 0.3s;
   }
-  .cmd-card.dimmed { opacity: 0.12; }
-  .cmd-card.flash { animation: flashPulse 1.2s ease-out; }
-  @keyframes flashPulse { 0% { box-shadow: 0 0 0 3px rgba(139,92,246,0.6); } 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); } }
-  .cmd-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-  .cmd-name { font-size: 13px; font-weight: 700; color: var(--text); }
-  .cmd-type-badge { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
-  .cmd-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; }
-  .cmd-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .cmd-card.dimmed { opacity: 0.1; }
+  .cmd-card.flash {
+    animation: flashPulse 1.2s ease-out;
+  }
+  @keyframes flashPulse {
+    0% { box-shadow: 0 0 0 3px oklch(from var(--brand-25) l c h / 50%); }
+    100% { box-shadow: 0 0 0 0 oklch(from var(--brand-25) l c h / 0%); }
+  }
+  .cmd-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
+  .cmd-name { font-size: 13px; font-weight: 600; color: var(--card-foreground); }
+  .cmd-desc {
+    font-size: 12px; color: var(--muted-foreground);
+    margin-bottom: 10px; line-height: 1.4;
+  }
+  .cmd-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+  }
   .cmd-text {
-    flex: 1; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 11px; color: #a5b4fc; background: rgba(0,0,0,0.3);
-    padding: 5px 10px; border-radius: 4px; overflow-x: auto; white-space: nowrap;
+    flex: 1;
+    font-family: 'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: var(--foreground);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    overflow-x: auto; white-space: nowrap;
+  }
+  .cmd-label {
+    font-size: 10px; color: var(--muted-foreground);
+    margin-bottom: 4px; margin-top: -2px;
   }
   .copy-btn {
-    flex-shrink: 0; background: rgba(139,92,246,0.15); color: #a78bfa; border: none;
-    border-radius: 4px; padding: 4px 10px; font-size: 10px; font-weight: 700;
-    cursor: pointer; transition: background 0.2s;
+    flex-shrink: 0;
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    font-family: inherit;
+    font-size: 11px; font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
   }
-  .copy-btn:hover { background: rgba(139,92,246,0.3); }
-  .copy-btn.copied { background: rgba(16,185,129,0.2); color: #34d399; }
-  .cmd-note { font-size: 10px; color: var(--text-dim); margin-top: 4px; font-style: italic; }
+  .copy-btn:hover { background: var(--accent); }
+  .copy-btn.copied {
+    background: oklch(from var(--success) l c h / 15%);
+    color: var(--success);
+    border-color: oklch(from var(--success) l c h / 30%);
+  }
+  .cmd-note {
+    font-size: 11px; color: var(--muted-foreground);
+    margin-top: 6px; font-style: italic;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
 
-  /* ── Responsive ────────────────────────── */
-  @media (max-width: 1100px) { .team-grid { grid-template-columns: repeat(3, 1fr); } }
+  /* ── Separator ──────────────────────────── */
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin: 0 24px;
+  }
+
+  /* ── Responsive ─────────────────────────── */
+  @media (max-width: 1100px) {
+    .team-grid { grid-template-columns: repeat(3, 1fr); }
+  }
   @media (max-width: 768px) {
-    .search-bar { flex-wrap: wrap; }
-    .search-bar input { max-width: 100%; }
+    .topbar { flex-wrap: wrap; gap: 10px; }
+    .search-input { max-width: 100%; order: 10; }
     .legend { display: none; }
+    .theme-toggle { order: 5; }
     .team-grid { grid-template-columns: 1fr 1fr; }
     .flow-steps { flex-direction: column; align-items: stretch; }
-    .step-arrow { width: 2px; height: 24px; align-self: center; }
-    .step-arrow::after { right: auto; left: -4px; top: auto; bottom: -1px; border: 5px solid transparent; border-top-color: var(--edge-color); border-left-color: transparent; }
+    .step-arrow {
+      width: 2px; height: 20px; align-self: center;
+    }
+    .step-arrow::after {
+      right: auto; left: -4px; top: auto; bottom: -1px;
+      border: 5px solid transparent;
+      border-top-color: var(--muted-foreground);
+      border-left-color: transparent;
+    }
     .cmd-grid { grid-template-columns: 1fr; }
     .skills-row { grid-template-columns: 1fr; }
   }
-  @media (max-width: 500px) { .team-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 500px) {
+    .team-grid { grid-template-columns: 1fr; }
+    .topbar { padding: 10px 16px; }
+    .section-header { padding-left: 16px; padding-right: 16px; }
+    .cpo-row, .skills-row, .pipelines-container, .cmd-container { padding-left: 16px; padding-right: 16px; }
+    .team-grid { padding-left: 16px; padding-right: 16px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- ── Search Bar ────────────────────────── -->
-<div class="search-bar">
-  <h1>OpenClaw Navigator</h1>
-  <input type="text" id="search" placeholder="Search agents, skills, tools, commands..." autocomplete="off">
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-agent)"></div>CPO</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-subagent)"></div>Agent</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-skill)"></div>Skill</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-pipeline)"></div>Pipeline</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-tool)"></div>Tool</div>
+<!-- ── Topbar ──────────────────────────────── -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">K</div>
+    <div>
+      <div class="topbar-title">OpenClaw Navigator</div>
+    </div>
   </div>
+  <input type="text" class="search-input" id="search" placeholder="Search agents, skills, tools, commands..." autocomplete="off">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--brand-30)"></div>CPO</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--alternate-7)"></div>Agent</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--alternate-6)"></div>Skill</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--alternate-5)"></div>Pipeline</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--alternate-3)"></div>Tool</div>
+  </div>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">
+    <span id="themeIcon">&#9788;</span> <span id="themeLabel">Light</span>
+  </button>
 </div>
 
-<!-- ── Section 1: Team Architecture ──────── -->
+<!-- ── Section 1: Team Architecture ───────── -->
 <div class="section-header">Team Architecture</div>
 
 <!-- CPO Card -->
 <div class="cpo-row">
   <div class="cpo-card" data-search="kogy cpo chief pipeline officer orchestrator strategy boss communications skills">
     <div class="cpo-info">
-      <div class="cpo-title">Kogy <span class="badge">CPO</span></div>
+      <div class="cpo-title">
+        Kogy
+        <span class="badge badge-brand badge-solid" style="background:var(--brand-30)">CPO</span>
+      </div>
       <div class="cpo-desc">Chief Pipeline Officer — Orchestrates 5 specialist agents. Handles boss communications, strategy, cross-pipeline synthesis, and skill management.</div>
       <div class="cpo-meta">
         <div class="cpo-meta-item"><strong>Model:</strong> Sonnet 4.6</div>
@@ -257,62 +578,62 @@
   <!-- Pipeline Agent -->
   <div class="agent-column" data-agent="pipeline">
     <div class="agent-card" data-search="pipeline agent lead hubspot icp filter haiku">
-      <div class="agent-name">Pipeline Agent <span class="model-tag model-haiku">Haiku</span></div>
+      <div class="agent-name">Pipeline Agent <span class="badge badge-model-haiku">Haiku</span></div>
       <div class="agent-desc">Runs the HubSpot lead pipeline. Queries, filters ICP, detects pain signals, routes hot leads.</div>
       <div class="agent-schedule">Every 30m (7am-10pm PST)</div>
     </div>
     <div class="resource-card rc-pipeline" data-search="lead pipeline hubspot icp outreach" data-node-id="lead-pipeline" onclick="scrollToCommand('lead-pipeline')">
-      <div class="rc-label">Lead Pipeline <span class="rc-badge" style="background:var(--accent-pipeline)">pipeline</span></div>
+      <div class="rc-label">Lead Pipeline <span class="badge badge-pipeline">pipeline</span></div>
       <div class="rc-desc">HubSpot query, ICP filter, pain signals, outreach</div>
     </div>
     <div class="resource-card rc-tool" data-search="outreach tracker email sequence" data-node-id="outreach-tracker" onclick="scrollToCommand('outreach-tracker')">
-      <div class="rc-label">outreach_tracker.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">outreach_tracker.py <span class="badge badge-tool">tool</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="email queue prime time staggered" data-node-id="email-queue" onclick="scrollToCommand('email-queue')">
-      <div class="rc-label">email_queue.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">email_queue.py <span class="badge badge-tool">tool</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="engagement tracker opens clicks replies" data-node-id="engagement-tracker" onclick="scrollToCommand('engagement-tracker')">
-      <div class="rc-label">engagement_tracker.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">engagement_tracker.py <span class="badge badge-tool">tool</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="tier1 batch send" data-node-id="send-tier1-batch" onclick="scrollToCommand('send-tier1-batch')">
-      <div class="rc-label">send_tier1_batch.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">send_tier1_batch.py <span class="badge badge-tool">tool</span></div>
     </div>
   </div>
 
   <!-- Copywriter Agent -->
   <div class="agent-column" data-agent="copywriter">
     <div class="agent-card" data-search="copywriter email writing v3 outreach sonnet humanizer">
-      <div class="agent-name">Copywriter <span class="model-tag model-sonnet">Sonnet</span></div>
+      <div class="agent-name">Copywriter <span class="badge badge-model-sonnet">Sonnet</span></div>
       <div class="agent-desc">Writes V3-format outreach emails. Personalization, humanization, and Knox CTA.</div>
       <div class="agent-schedule">On-demand (via Kogy / Pipeline)</div>
     </div>
     <div class="resource-card rc-tool" data-search="send email gmail apps script" data-node-id="send-email" onclick="scrollToCommand('send-email')">
-      <div class="rc-label">send_email.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">send_email.py <span class="badge badge-tool">tool</span></div>
     </div>
     <div class="resource-card rc-skill" data-search="ai humanizer detect remove patterns" data-node-id="ai-humanizer" onclick="scrollToCommand('ai-humanizer')">
-      <div class="rc-label">ai-humanizer <span class="rc-badge" style="background:var(--accent-skill)">skill</span></div>
+      <div class="rc-label">ai-humanizer <span class="badge badge-skill">skill</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="outreach tracker" data-node-id="outreach-tracker" onclick="scrollToCommand('outreach-tracker')">
-      <div class="rc-label">outreach_tracker.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">outreach_tracker.py <span class="badge badge-tool">tool</span></div>
     </div>
   </div>
 
   <!-- LinkedIn Agent -->
   <div class="agent-column" data-agent="linkedin">
     <div class="agent-card" data-search="linkedin agent source leads connection notes sonnet binny">
-      <div class="agent-name">LinkedIn Agent <span class="model-tag model-sonnet">Sonnet</span></div>
+      <div class="agent-name">LinkedIn Agent <span class="badge badge-model-sonnet">Sonnet</span></div>
       <div class="agent-desc">Sources 25 leads/day, writes personalized connection notes in Binny's voice.</div>
       <div class="agent-schedule">Daily 2pm PST</div>
     </div>
     <div class="resource-card rc-pipeline" data-search="linkedin pipeline sourcer writer connection" data-node-id="linkedin-pipeline" onclick="scrollToCommand('linkedin-pipeline')">
-      <div class="rc-label">LinkedIn Pipeline <span class="rc-badge" style="background:var(--accent-pipeline)">pipeline</span></div>
+      <div class="rc-label">LinkedIn Pipeline <span class="badge badge-pipeline">pipeline</span></div>
     </div>
     <div class="resource-card rc-subagent" data-search="sourcer haiku lead sourcing" data-node-id="sourcer-subagent" onclick="scrollToCommand('sourcer-subagent')">
-      <div class="rc-label">Sourcer <span class="rc-badge" style="background:var(--accent-subagent)">sub-agent</span></div>
+      <div class="rc-label">Sourcer <span class="badge badge-subagent">sub-agent</span></div>
       <div class="rc-desc">LinkedIn lead sourcer (Haiku)</div>
     </div>
     <div class="resource-card rc-subagent" data-search="writer sonnet connection notes inmail" data-node-id="writer-subagent" onclick="scrollToCommand('writer-subagent')">
-      <div class="rc-label">Writer <span class="rc-badge" style="background:var(--accent-subagent)">sub-agent</span></div>
+      <div class="rc-label">Writer <span class="badge badge-subagent">sub-agent</span></div>
       <div class="rc-desc">Connection note writer (Sonnet)</div>
     </div>
   </div>
@@ -320,18 +641,18 @@
   <!-- Newsletter Agent -->
   <div class="agent-column" data-agent="newsletter">
     <div class="agent-card" data-search="newsletter agent finance signal binny gill cfo sonnet">
-      <div class="agent-name">Newsletter Agent <span class="model-tag model-sonnet">Sonnet</span></div>
+      <div class="agent-name">Newsletter Agent <span class="badge badge-model-sonnet">Sonnet</span></div>
       <div class="agent-desc">"The Finance Signal" daily newsletter for CFOs. Writes as Binny Gill.</div>
       <div class="agent-schedule">Daily 7am UTC</div>
     </div>
     <div class="resource-card rc-pipeline" data-search="newsletter pipeline finance signal poll" data-node-id="newsletter-pipeline" onclick="scrollToCommand('newsletter-pipeline')">
-      <div class="rc-label">Newsletter Pipeline <span class="rc-badge" style="background:var(--accent-pipeline)">pipeline</span></div>
+      <div class="rc-label">Newsletter Pipeline <span class="badge badge-pipeline">pipeline</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="signal poll vercel supabase newsletter" data-node-id="signal-poll" onclick="scrollToCommand('signal-poll')">
-      <div class="rc-label">signal-poll/ <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">signal-poll/ <span class="badge badge-tool">tool</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="send email" data-node-id="send-email" onclick="scrollToCommand('send-email')">
-      <div class="rc-label">send_email.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">send_email.py <span class="badge badge-tool">tool</span></div>
       <div class="rc-desc">For sending drafts</div>
     </div>
   </div>
@@ -339,21 +660,21 @@
   <!-- Follow-up Agent -->
   <div class="agent-column" data-agent="followup">
     <div class="agent-card" data-search="followup follow-up agent sequence cadence haiku">
-      <div class="agent-name">Follow-up Agent <span class="model-tag model-haiku">Haiku</span></div>
+      <div class="agent-name">Follow-up Agent <span class="badge badge-model-haiku">Haiku</span></div>
       <div class="agent-desc">Manages 3-step follow-up email cadence. Never misses a follow-up.</div>
       <div class="agent-schedule">Daily 5pm UTC (9am PST)</div>
     </div>
     <div class="resource-card rc-pipeline" data-search="followup follow-up pipeline cadence sequence" data-node-id="followup-pipeline" onclick="scrollToCommand('followup-pipeline')">
-      <div class="rc-label">Follow-up Pipeline <span class="rc-badge" style="background:var(--accent-pipeline)">pipeline</span></div>
+      <div class="rc-label">Follow-up Pipeline <span class="badge badge-pipeline">pipeline</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="send followup cadence" data-node-id="send-followup" onclick="scrollToCommand('send-followup')">
-      <div class="rc-label">send_followup.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">send_followup.py <span class="badge badge-tool">tool</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="email queue" data-node-id="email-queue" onclick="scrollToCommand('email-queue')">
-      <div class="rc-label">email_queue.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">email_queue.py <span class="badge badge-tool">tool</span></div>
     </div>
     <div class="resource-card rc-tool" data-search="outreach tracker" data-node-id="outreach-tracker" onclick="scrollToCommand('outreach-tracker')">
-      <div class="rc-label">outreach_tracker.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-label">outreach_tracker.py <span class="badge badge-tool">tool</span></div>
     </div>
   </div>
 
@@ -363,19 +684,19 @@
 <div class="section-header">Skills (managed by Kogy)</div>
 <div class="skills-row">
   <div class="skill-card" data-search="ai humanizer detect remove ai patterns writing" data-node-id="ai-humanizer" onclick="scrollToCommand('ai-humanizer')">
-    <div class="skill-name">ai-humanizer <span class="s-badge">skill</span></div>
+    <div class="skill-name">ai-humanizer <span class="badge badge-skill">skill</span></div>
     <div class="skill-desc">Detect & remove AI writing patterns (24 detectors, 500+ banned words). Also used by Copywriter.</div>
   </div>
   <div class="skill-card" data-search="kognitos runner trigger monitor automation processes" data-node-id="kognitos-runner" onclick="scrollToCommand('kognitos-runner')">
-    <div class="skill-name">kognitos-runner <span class="s-badge">skill</span></div>
+    <div class="skill-name">kognitos-runner <span class="badge badge-skill">skill</span></div>
     <div class="skill-desc">Trigger & monitor Kognitos automation processes. Neurosymbolic execution with audit trail.</div>
   </div>
   <div class="skill-card" data-search="self improving memory corrections learning" data-node-id="self-improving" onclick="scrollToCommand('self-improving')">
-    <div class="skill-name">self-improving <span class="s-badge">skill</span></div>
+    <div class="skill-name">self-improving <span class="badge badge-skill">skill</span></div>
     <div class="skill-desc">Memory that self-improves from corrections. HOT / WARM / COLD tiers.</div>
   </div>
   <div class="skill-card" data-search="skillscanner security scan clawhub gen digital" data-node-id="skillscanner" onclick="scrollToCommand('skillscanner')">
-    <div class="skill-name">skillscanner <span class="s-badge">skill</span></div>
+    <div class="skill-name">skillscanner <span class="badge badge-skill">skill</span></div>
     <div class="skill-desc">Security scan ClawHub skills via Gen Digital API before installation.</div>
   </div>
 </div>
@@ -387,8 +708,8 @@
   <div class="pipeline-flow" data-pipeline="lead-pipeline">
     <div class="pipeline-header">
       <span class="pipeline-title">Lead Pipeline</span>
-      <span class="pipeline-agent-tag">Pipeline Agent</span>
-      <span class="pipeline-schedule">Every 30m</span>
+      <span class="badge badge-agent">Pipeline Agent</span>
+      <span class="badge badge-success">Every 30m</span>
       <span class="pipeline-meta">Config: PIPELINE-INSTRUCTIONS.md &middot; Model: Haiku 4.5</span>
     </div>
     <div class="flow-steps">
@@ -411,8 +732,8 @@
   <div class="pipeline-flow" data-pipeline="linkedin-pipeline">
     <div class="pipeline-header">
       <span class="pipeline-title">LinkedIn Pipeline</span>
-      <span class="pipeline-agent-tag">LinkedIn Agent</span>
-      <span class="pipeline-schedule">Daily 2pm PST</span>
+      <span class="badge badge-agent">LinkedIn Agent</span>
+      <span class="badge badge-success">Daily 2pm PST</span>
       <span class="pipeline-meta">Config: LINKEDIN-PIPELINE-INSTRUCTIONS.md &middot; Model: Sonnet 4.6</span>
     </div>
     <div class="flow-steps">
@@ -427,8 +748,8 @@
   <div class="pipeline-flow" data-pipeline="newsletter-pipeline">
     <div class="pipeline-header">
       <span class="pipeline-title">Newsletter Pipeline</span>
-      <span class="pipeline-agent-tag">Newsletter Agent</span>
-      <span class="pipeline-schedule">Daily 7am UTC</span>
+      <span class="badge badge-agent">Newsletter Agent</span>
+      <span class="badge badge-success">Daily 7am UTC</span>
       <span class="pipeline-meta">Config: NEWSLETTER-PIPELINE-INSTRUCTIONS.md &middot; "The Finance Signal"</span>
     </div>
     <div class="flow-steps">
@@ -445,8 +766,8 @@
   <div class="pipeline-flow" data-pipeline="followup-pipeline">
     <div class="pipeline-header">
       <span class="pipeline-title">Follow-up Pipeline</span>
-      <span class="pipeline-agent-tag">Follow-up Agent</span>
-      <span class="pipeline-schedule">Daily 5pm UTC</span>
+      <span class="badge badge-agent">Follow-up Agent</span>
+      <span class="badge badge-success">Daily 5pm UTC</span>
       <span class="pipeline-meta">Cadence: Initial &rarr; +3d FU#1 &rarr; +7d FU#2 &rarr; Stop &middot; Model: Haiku 4.5</span>
     </div>
     <div class="flow-steps">
@@ -462,7 +783,7 @@
 
 </div>
 
-<!-- ── Section 3: Command Reference ──────── -->
+<!-- ── Section 3: Command Reference ───────── -->
 <div class="section-header">Command Reference</div>
 <div class="cmd-container" id="cmd-ref"></div>
 
@@ -677,13 +998,13 @@ const COMMANDS = {
   ],
 };
 
-// ── Badge colors ─────────────────────────────
-const BADGE_COLORS = {
-  agent: 'var(--accent-subagent)',
-  skill: 'var(--accent-skill)',
-  tool: 'var(--accent-tool)',
-  pipeline: 'var(--accent-pipeline)',
-  subagent: 'var(--accent-subagent)',
+// ── Badge class mapping ──────────────────────
+const BADGE_CLASSES = {
+  agent: 'badge-agent',
+  skill: 'badge-skill',
+  tool: 'badge-tool',
+  pipeline: 'badge-pipeline',
+  subagent: 'badge-subagent',
 };
 
 // ── Render Command Reference ─────────────────
@@ -695,7 +1016,7 @@ function renderCommandRef() {
     html += `<div class="cmd-category">${escHtml(catLabel)}</div>`;
     html += '<div class="cmd-grid">';
     nodes.forEach(node => {
-      const color = BADGE_COLORS[node.type] || 'var(--accent-tool)';
+      const badgeClass = BADGE_CLASSES[node.type] || 'badge-tool';
       const typeLabel = node.type === 'subagent' ? 'sub-agent' : node.type;
       let cmdsHtml = '';
       node.commands.forEach(c => {
@@ -704,7 +1025,7 @@ function renderCommandRef() {
             <code class="cmd-text" title="${escHtml(c.cmd)}">${escHtml(c.cmd)}</code>
             <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
           </div>
-          <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px;margin-top:-2px;">${escHtml(c.name)}</div>
+          <div class="cmd-label">${escHtml(c.name)}</div>
         `;
       });
       const noteHtml = node.note ? `<div class="cmd-note">${escHtml(node.note)}</div>` : '';
@@ -712,7 +1033,7 @@ function renderCommandRef() {
         <div class="cmd-card" data-node-id="${node.id}">
           <div class="cmd-header">
             <span class="cmd-name">${escHtml(node.label)}</span>
-            <span class="cmd-type-badge" style="background:${color};color:#fff">${typeLabel}</span>
+            <span class="badge ${badgeClass}">${typeLabel}</span>
           </div>
           <div class="cmd-desc">${escHtml(node.description)}</div>
           ${cmdsHtml}
@@ -755,6 +1076,22 @@ function scrollToCommand(nodeId) {
   }
 }
 
+// ── Theme Toggle ─────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.classList.contains('dark');
+  html.classList.toggle('dark');
+  const icon = document.getElementById('themeIcon');
+  const label = document.getElementById('themeLabel');
+  if (isDark) {
+    icon.innerHTML = '&#9790;';
+    label.textContent = 'Dark';
+  } else {
+    icon.innerHTML = '&#9788;';
+    label.textContent = 'Light';
+  }
+}
+
 // ── Search / Filter ──────────────────────────
 let searchTimer = null;
 document.getElementById('search').addEventListener('input', function() {
@@ -765,44 +1102,37 @@ document.getElementById('search').addEventListener('input', function() {
 function filterWorkspace(query) {
   const q = query.toLowerCase().trim();
 
-  // Clear all
   if (!q) {
     document.querySelectorAll('.dimmed, .highlighted').forEach(el => el.classList.remove('dimmed', 'highlighted'));
     return;
   }
 
-  // CPO card
   const cpoCard = document.querySelector('.cpo-card');
   const cpoMatch = (cpoCard.dataset.search || '').includes(q) || cpoCard.textContent.toLowerCase().includes(q);
   cpoCard.classList.toggle('dimmed', !cpoMatch);
 
-  // Agent cards
   document.querySelectorAll('.agent-card').forEach(card => {
     const match = (card.dataset.search || '').includes(q) || card.textContent.toLowerCase().includes(q);
     card.classList.toggle('dimmed', !match);
   });
 
-  // Resource cards
   document.querySelectorAll('.resource-card').forEach(card => {
     const match = (card.dataset.search || '').includes(q) || card.textContent.toLowerCase().includes(q);
     card.classList.toggle('dimmed', !match);
     card.classList.toggle('highlighted', match);
   });
 
-  // Skill cards
   document.querySelectorAll('.skill-card').forEach(card => {
     const match = (card.dataset.search || '').includes(q) || card.textContent.toLowerCase().includes(q);
     card.classList.toggle('dimmed', !match);
     card.classList.toggle('highlighted', match);
   });
 
-  // Pipeline flows
   document.querySelectorAll('.pipeline-flow').forEach(flow => {
     const match = flow.textContent.toLowerCase().includes(q);
     flow.classList.toggle('dimmed', !match);
   });
 
-  // Command cards
   document.querySelectorAll('.cmd-card').forEach(card => {
     const match = card.textContent.toLowerCase().includes(q);
     card.classList.toggle('dimmed', !match);
