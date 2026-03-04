@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Workspace Navigator — Kogy CPO Team</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  :root {
+    --bg: #0f1117;
+    --card: #252c3d;
+    --card-hover: #2d3548;
+    --card-border: #364156;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent-agent: #8b5cf6;
+    --accent-skill: #06b6d4;
+    --accent-tool: #f59e0b;
+    --accent-pipeline: #10b981;
+    --accent-subagent: #ec4899;
+    --edge-color: #475569;
+  }
+
+  /* ── Search Bar ────────────────────────── */
+  .search-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15, 17, 23, 0.95);
+    backdrop-filter: blur(12px);
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .search-bar h1 { font-size: 18px; font-weight: 700; white-space: nowrap; letter-spacing: -0.3px; }
+  .search-bar input {
+    flex: 1; max-width: 400px;
+    background: var(--card); border: 1px solid var(--card-border); border-radius: 8px;
+    color: var(--text); font-size: 14px; padding: 8px 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-bar input:focus { border-color: var(--accent-agent); }
+  .search-bar input::placeholder { color: var(--text-dim); }
+  .legend { display: flex; gap: 14px; margin-left: auto; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ── Section Headers ───────────────────── */
+  .section-header {
+    padding: 28px 24px 12px;
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text-dim);
+  }
+
+  /* ── CPO Card (top) ────────────────────── */
+  .cpo-row { padding: 0 24px 16px; }
+  .cpo-card {
+    background: var(--card); border-radius: 10px; padding: 20px 24px;
+    border-left: 4px solid var(--accent-agent);
+    display: flex; align-items: center; gap: 20px;
+    transition: opacity 0.3s;
+  }
+  .cpo-card.dimmed { opacity: 0.12; }
+  .cpo-info { flex: 1; }
+  .cpo-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .cpo-title .badge { font-size: 10px; background: var(--accent-agent); color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .cpo-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+  .cpo-meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+  .cpo-meta-item { font-size: 11px; color: var(--text-dim); }
+  .cpo-meta-item strong { color: var(--text-muted); }
+
+  /* ── Agent Columns ─────────────────────── */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    padding: 0 24px 24px;
+  }
+  .agent-column { display: flex; flex-direction: column; gap: 8px; }
+  .agent-card {
+    background: var(--card); border-radius: 10px; padding: 14px 16px;
+    border-top: 3px solid var(--accent-subagent);
+    transition: opacity 0.3s;
+  }
+  .agent-card.dimmed { opacity: 0.12; }
+  .agent-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
+  .agent-name .model-tag {
+    font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .model-haiku { background: rgba(6,182,212,0.2); color: #22d3ee; }
+  .model-sonnet { background: rgba(139,92,246,0.2); color: #a78bfa; }
+  .agent-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 6px; }
+  .agent-schedule { font-size: 10px; color: #34d399; font-weight: 600; }
+
+  /* ── Resource Cards (inside agent columns) */
+  .resource-card {
+    background: #1a2030; border-radius: 8px; padding: 10px 12px;
+    border-left: 3px solid transparent;
+    cursor: pointer; transition: opacity 0.3s, transform 0.15s;
+  }
+  .resource-card:hover { transform: translateX(3px); }
+  .resource-card.dimmed { opacity: 0.12; }
+  .resource-card.highlighted { box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
+  .rc-pipeline { border-left-color: var(--accent-pipeline); }
+  .rc-tool { border-left-color: var(--accent-tool); }
+  .rc-skill { border-left-color: var(--accent-skill); }
+  .rc-subagent { border-left-color: var(--accent-subagent); }
+  .rc-label { font-size: 11px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .rc-label .rc-badge {
+    font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+    text-transform: uppercase; color: #fff; letter-spacing: 0.3px;
+  }
+  .rc-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+  /* ── Skills Section (Kogy-managed) ──────── */
+  .skills-row {
+    padding: 0 24px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .skill-card {
+    background: var(--card); border-radius: 8px; padding: 12px 14px;
+    border-left: 3px solid var(--accent-skill);
+    cursor: pointer; transition: opacity 0.3s;
+  }
+  .skill-card.dimmed { opacity: 0.12; }
+  .skill-card.highlighted { box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
+  .skill-name { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .skill-name .s-badge { font-size: 8px; background: var(--accent-skill); color: #fff; padding: 1px 5px; border-radius: 3px; font-weight: 700; text-transform: uppercase; }
+  .skill-desc { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+  /* ── Pipeline Flows ────────────────────── */
+  .pipelines-container { padding: 0 24px 20px; }
+  .pipeline-flow {
+    background: var(--card); border-radius: 10px; padding: 18px 20px;
+    margin-bottom: 14px; transition: opacity 0.3s;
+  }
+  .pipeline-flow.dimmed { opacity: 0.12; }
+  .pipeline-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .pipeline-title { font-size: 14px; font-weight: 700; }
+  .pipeline-meta { font-size: 11px; color: var(--text-dim); }
+  .pipeline-schedule {
+    font-size: 10px; background: rgba(16,185,129,0.15); color: #34d399;
+    padding: 2px 8px; border-radius: 4px; font-weight: 600;
+  }
+  .pipeline-agent-tag {
+    font-size: 10px; background: rgba(236,72,153,0.15); color: #f472b6;
+    padding: 2px 8px; border-radius: 4px; font-weight: 600;
+  }
+  .flow-steps { display: flex; align-items: center; gap: 0; overflow-x: auto; padding-bottom: 4px; }
+  .step {
+    flex-shrink: 0; background: #1a2030; border: 1px solid var(--card-border);
+    border-radius: 6px; padding: 8px 14px; font-size: 11px; font-weight: 600;
+    color: var(--text); text-align: center; min-width: 110px;
+  }
+  .step.decision { border-style: dashed; border-color: #f59e0b; background: rgba(245,158,11,0.06); }
+  .step .tool-badge { display: block; font-size: 9px; color: #f59e0b; font-weight: 700; margin-top: 3px; }
+  .step .model-badge { display: block; font-size: 9px; color: var(--accent-subagent); font-weight: 600; margin-top: 2px; }
+  .step-arrow { flex-shrink: 0; width: 32px; height: 2px; background: var(--edge-color); position: relative; }
+  .step-arrow::after { content: ''; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left-color: var(--edge-color); }
+
+  /* ── Command Reference ─────────────────── */
+  .cmd-container { padding: 0 24px 40px; }
+  .cmd-category {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-dim); margin: 20px 0 10px;
+    padding-bottom: 6px; border-bottom: 1px solid rgba(100,116,139,0.2);
+  }
+  .cmd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 10px; }
+  .cmd-card {
+    background: var(--card); border-radius: 8px; padding: 14px 16px;
+    transition: opacity 0.3s, box-shadow 0.3s;
+  }
+  .cmd-card.dimmed { opacity: 0.12; }
+  .cmd-card.flash { animation: flashPulse 1.2s ease-out; }
+  @keyframes flashPulse { 0% { box-shadow: 0 0 0 3px rgba(139,92,246,0.6); } 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); } }
+  .cmd-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .cmd-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .cmd-type-badge { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .cmd-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; }
+  .cmd-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .cmd-text {
+    flex: 1; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 11px; color: #a5b4fc; background: rgba(0,0,0,0.3);
+    padding: 5px 10px; border-radius: 4px; overflow-x: auto; white-space: nowrap;
+  }
+  .copy-btn {
+    flex-shrink: 0; background: rgba(139,92,246,0.15); color: #a78bfa; border: none;
+    border-radius: 4px; padding: 4px 10px; font-size: 10px; font-weight: 700;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .copy-btn:hover { background: rgba(139,92,246,0.3); }
+  .copy-btn.copied { background: rgba(16,185,129,0.2); color: #34d399; }
+  .cmd-note { font-size: 10px; color: var(--text-dim); margin-top: 4px; font-style: italic; }
+
+  /* ── Responsive ────────────────────────── */
+  @media (max-width: 1100px) { .team-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 768px) {
+    .search-bar { flex-wrap: wrap; }
+    .search-bar input { max-width: 100%; }
+    .legend { display: none; }
+    .team-grid { grid-template-columns: 1fr 1fr; }
+    .flow-steps { flex-direction: column; align-items: stretch; }
+    .step-arrow { width: 2px; height: 24px; align-self: center; }
+    .step-arrow::after { right: auto; left: -4px; top: auto; bottom: -1px; border: 5px solid transparent; border-top-color: var(--edge-color); border-left-color: transparent; }
+    .cmd-grid { grid-template-columns: 1fr; }
+    .skills-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 500px) { .team-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- ── Search Bar ────────────────────────── -->
+<div class="search-bar">
+  <h1>OpenClaw Navigator</h1>
+  <input type="text" id="search" placeholder="Search agents, skills, tools, commands..." autocomplete="off">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-agent)"></div>CPO</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-subagent)"></div>Agent</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-skill)"></div>Skill</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-pipeline)"></div>Pipeline</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-tool)"></div>Tool</div>
+  </div>
+</div>
+
+<!-- ── Section 1: Team Architecture ──────── -->
+<div class="section-header">Team Architecture</div>
+
+<!-- CPO Card -->
+<div class="cpo-row">
+  <div class="cpo-card" data-search="kogy cpo chief pipeline officer orchestrator strategy boss communications skills">
+    <div class="cpo-info">
+      <div class="cpo-title">Kogy <span class="badge">CPO</span></div>
+      <div class="cpo-desc">Chief Pipeline Officer — Orchestrates 5 specialist agents. Handles boss communications, strategy, cross-pipeline synthesis, and skill management.</div>
+      <div class="cpo-meta">
+        <div class="cpo-meta-item"><strong>Model:</strong> Sonnet 4.6</div>
+        <div class="cpo-meta-item"><strong>Heartbeat:</strong> every 30m</div>
+        <div class="cpo-meta-item"><strong>Channels:</strong> Telegram + Slack</div>
+        <div class="cpo-meta-item"><strong>Config:</strong> SOUL.md, AGENTS.md, USER.md, MEMORY.md</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Agent Columns -->
+<div class="team-grid">
+
+  <!-- Pipeline Agent -->
+  <div class="agent-column" data-agent="pipeline">
+    <div class="agent-card" data-search="pipeline agent lead hubspot icp filter haiku">
+      <div class="agent-name">Pipeline Agent <span class="model-tag model-haiku">Haiku</span></div>
+      <div class="agent-desc">Runs the HubSpot lead pipeline. Queries, filters ICP, detects pain signals, routes hot leads.</div>
+      <div class="agent-schedule">Every 30m (7am-10pm PST)</div>
+    </div>
+    <div class="resource-card rc-pipeline" data-search="lead pipeline hubspot icp outreach" data-node-id="lead-pipeline" onclick="scrollToCommand('lead-pipeline')">
+      <div class="rc-label">Lead Pipeline <span class="rc-badge" style="background:var(--accent-pipeline)">pipeline</span></div>
+      <div class="rc-desc">HubSpot query, ICP filter, pain signals, outreach</div>
+    </div>
+    <div class="resource-card rc-tool" data-search="outreach tracker email sequence" data-node-id="outreach-tracker" onclick="scrollToCommand('outreach-tracker')">
+      <div class="rc-label">outreach_tracker.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="email queue prime time staggered" data-node-id="email-queue" onclick="scrollToCommand('email-queue')">
+      <div class="rc-label">email_queue.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="engagement tracker opens clicks replies" data-node-id="engagement-tracker" onclick="scrollToCommand('engagement-tracker')">
+      <div class="rc-label">engagement_tracker.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="tier1 batch send" data-node-id="send-tier1-batch" onclick="scrollToCommand('send-tier1-batch')">
+      <div class="rc-label">send_tier1_batch.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+  </div>
+
+  <!-- Copywriter Agent -->
+  <div class="agent-column" data-agent="copywriter">
+    <div class="agent-card" data-search="copywriter email writing v3 outreach sonnet humanizer">
+      <div class="agent-name">Copywriter <span class="model-tag model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Writes V3-format outreach emails. Personalization, humanization, and Knox CTA.</div>
+      <div class="agent-schedule">On-demand (via Kogy / Pipeline)</div>
+    </div>
+    <div class="resource-card rc-tool" data-search="send email gmail apps script" data-node-id="send-email" onclick="scrollToCommand('send-email')">
+      <div class="rc-label">send_email.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+    <div class="resource-card rc-skill" data-search="ai humanizer detect remove patterns" data-node-id="ai-humanizer" onclick="scrollToCommand('ai-humanizer')">
+      <div class="rc-label">ai-humanizer <span class="rc-badge" style="background:var(--accent-skill)">skill</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="outreach tracker" data-node-id="outreach-tracker" onclick="scrollToCommand('outreach-tracker')">
+      <div class="rc-label">outreach_tracker.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+  </div>
+
+  <!-- LinkedIn Agent -->
+  <div class="agent-column" data-agent="linkedin">
+    <div class="agent-card" data-search="linkedin agent source leads connection notes sonnet binny">
+      <div class="agent-name">LinkedIn Agent <span class="model-tag model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Sources 25 leads/day, writes personalized connection notes in Binny's voice.</div>
+      <div class="agent-schedule">Daily 2pm PST</div>
+    </div>
+    <div class="resource-card rc-pipeline" data-search="linkedin pipeline sourcer writer connection" data-node-id="linkedin-pipeline" onclick="scrollToCommand('linkedin-pipeline')">
+      <div class="rc-label">LinkedIn Pipeline <span class="rc-badge" style="background:var(--accent-pipeline)">pipeline</span></div>
+    </div>
+    <div class="resource-card rc-subagent" data-search="sourcer haiku lead sourcing" data-node-id="sourcer-subagent" onclick="scrollToCommand('sourcer-subagent')">
+      <div class="rc-label">Sourcer <span class="rc-badge" style="background:var(--accent-subagent)">sub-agent</span></div>
+      <div class="rc-desc">LinkedIn lead sourcer (Haiku)</div>
+    </div>
+    <div class="resource-card rc-subagent" data-search="writer sonnet connection notes inmail" data-node-id="writer-subagent" onclick="scrollToCommand('writer-subagent')">
+      <div class="rc-label">Writer <span class="rc-badge" style="background:var(--accent-subagent)">sub-agent</span></div>
+      <div class="rc-desc">Connection note writer (Sonnet)</div>
+    </div>
+  </div>
+
+  <!-- Newsletter Agent -->
+  <div class="agent-column" data-agent="newsletter">
+    <div class="agent-card" data-search="newsletter agent finance signal binny gill cfo sonnet">
+      <div class="agent-name">Newsletter Agent <span class="model-tag model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">"The Finance Signal" daily newsletter for CFOs. Writes as Binny Gill.</div>
+      <div class="agent-schedule">Daily 7am UTC</div>
+    </div>
+    <div class="resource-card rc-pipeline" data-search="newsletter pipeline finance signal poll" data-node-id="newsletter-pipeline" onclick="scrollToCommand('newsletter-pipeline')">
+      <div class="rc-label">Newsletter Pipeline <span class="rc-badge" style="background:var(--accent-pipeline)">pipeline</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="signal poll vercel supabase newsletter" data-node-id="signal-poll" onclick="scrollToCommand('signal-poll')">
+      <div class="rc-label">signal-poll/ <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="send email" data-node-id="send-email" onclick="scrollToCommand('send-email')">
+      <div class="rc-label">send_email.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+      <div class="rc-desc">For sending drafts</div>
+    </div>
+  </div>
+
+  <!-- Follow-up Agent -->
+  <div class="agent-column" data-agent="followup">
+    <div class="agent-card" data-search="followup follow-up agent sequence cadence haiku">
+      <div class="agent-name">Follow-up Agent <span class="model-tag model-haiku">Haiku</span></div>
+      <div class="agent-desc">Manages 3-step follow-up email cadence. Never misses a follow-up.</div>
+      <div class="agent-schedule">Daily 5pm UTC (9am PST)</div>
+    </div>
+    <div class="resource-card rc-pipeline" data-search="followup follow-up pipeline cadence sequence" data-node-id="followup-pipeline" onclick="scrollToCommand('followup-pipeline')">
+      <div class="rc-label">Follow-up Pipeline <span class="rc-badge" style="background:var(--accent-pipeline)">pipeline</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="send followup cadence" data-node-id="send-followup" onclick="scrollToCommand('send-followup')">
+      <div class="rc-label">send_followup.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="email queue" data-node-id="email-queue" onclick="scrollToCommand('email-queue')">
+      <div class="rc-label">email_queue.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+    <div class="resource-card rc-tool" data-search="outreach tracker" data-node-id="outreach-tracker" onclick="scrollToCommand('outreach-tracker')">
+      <div class="rc-label">outreach_tracker.py <span class="rc-badge" style="background:var(--accent-tool)">tool</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Kogy's Skills -->
+<div class="section-header">Skills (managed by Kogy)</div>
+<div class="skills-row">
+  <div class="skill-card" data-search="ai humanizer detect remove ai patterns writing" data-node-id="ai-humanizer" onclick="scrollToCommand('ai-humanizer')">
+    <div class="skill-name">ai-humanizer <span class="s-badge">skill</span></div>
+    <div class="skill-desc">Detect & remove AI writing patterns (24 detectors, 500+ banned words). Also used by Copywriter.</div>
+  </div>
+  <div class="skill-card" data-search="kognitos runner trigger monitor automation processes" data-node-id="kognitos-runner" onclick="scrollToCommand('kognitos-runner')">
+    <div class="skill-name">kognitos-runner <span class="s-badge">skill</span></div>
+    <div class="skill-desc">Trigger & monitor Kognitos automation processes. Neurosymbolic execution with audit trail.</div>
+  </div>
+  <div class="skill-card" data-search="self improving memory corrections learning" data-node-id="self-improving" onclick="scrollToCommand('self-improving')">
+    <div class="skill-name">self-improving <span class="s-badge">skill</span></div>
+    <div class="skill-desc">Memory that self-improves from corrections. HOT / WARM / COLD tiers.</div>
+  </div>
+  <div class="skill-card" data-search="skillscanner security scan clawhub gen digital" data-node-id="skillscanner" onclick="scrollToCommand('skillscanner')">
+    <div class="skill-name">skillscanner <span class="s-badge">skill</span></div>
+    <div class="skill-desc">Security scan ClawHub skills via Gen Digital API before installation.</div>
+  </div>
+</div>
+
+<!-- ── Section 2: Pipeline Workflows ──────── -->
+<div class="section-header">Automation Workflows</div>
+<div class="pipelines-container">
+
+  <div class="pipeline-flow" data-pipeline="lead-pipeline">
+    <div class="pipeline-header">
+      <span class="pipeline-title">Lead Pipeline</span>
+      <span class="pipeline-agent-tag">Pipeline Agent</span>
+      <span class="pipeline-schedule">Every 30m</span>
+      <span class="pipeline-meta">Config: PIPELINE-INSTRUCTIONS.md &middot; Model: Haiku 4.5</span>
+    </div>
+    <div class="flow-steps">
+      <div class="step">Query HubSpot<span class="tool-badge">11x / RB2B / Direct</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">ICP Filter<span class="tool-badge">150+ emp, $25M+</span></div>
+      <div class="step-arrow"></div>
+      <div class="step decision">Pain Signal Detection</div>
+      <div class="step-arrow"></div>
+      <div class="step decision">Hot Lead?<span class="tool-badge">Brand / C-level / 2+</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Copywriter Protocol<span class="model-badge">Spawns Copywriter</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Email Outreach<span class="tool-badge">send_email.py</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Track<span class="tool-badge">outreach_tracker.py</span></div>
+    </div>
+  </div>
+
+  <div class="pipeline-flow" data-pipeline="linkedin-pipeline">
+    <div class="pipeline-header">
+      <span class="pipeline-title">LinkedIn Pipeline</span>
+      <span class="pipeline-agent-tag">LinkedIn Agent</span>
+      <span class="pipeline-schedule">Daily 2pm PST</span>
+      <span class="pipeline-meta">Config: LINKEDIN-PIPELINE-INSTRUCTIONS.md &middot; Model: Sonnet 4.6</span>
+    </div>
+    <div class="flow-steps">
+      <div class="step">Source 25 Leads<span class="model-badge">Sourcer (Haiku)</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Write Connection Notes<span class="model-badge">Writer (Sonnet)</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Push to Google Sheet<span class="tool-badge">Apps Script webhook</span></div>
+    </div>
+  </div>
+
+  <div class="pipeline-flow" data-pipeline="newsletter-pipeline">
+    <div class="pipeline-header">
+      <span class="pipeline-title">Newsletter Pipeline</span>
+      <span class="pipeline-agent-tag">Newsletter Agent</span>
+      <span class="pipeline-schedule">Daily 7am UTC</span>
+      <span class="pipeline-meta">Config: NEWSLETTER-PIPELINE-INSTRUCTIONS.md &middot; "The Finance Signal"</span>
+    </div>
+    <div class="flow-steps">
+      <div class="step">Research Signals<span class="tool-badge">Web search</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Write Issue<span class="tool-badge">5-section template</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Inject Polls<span class="tool-badge">signal-poll/</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Send Draft<span class="tool-badge">For review</span></div>
+    </div>
+  </div>
+
+  <div class="pipeline-flow" data-pipeline="followup-pipeline">
+    <div class="pipeline-header">
+      <span class="pipeline-title">Follow-up Pipeline</span>
+      <span class="pipeline-agent-tag">Follow-up Agent</span>
+      <span class="pipeline-schedule">Daily 5pm UTC</span>
+      <span class="pipeline-meta">Cadence: Initial &rarr; +3d FU#1 &rarr; +7d FU#2 &rarr; Stop &middot; Model: Haiku 4.5</span>
+    </div>
+    <div class="flow-steps">
+      <div class="step">Check Replies<span class="tool-badge">engagement_tracker.py</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Get Due Leads<span class="tool-badge">outreach_tracker.py</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Queue<span class="tool-badge">email_queue.py</span></div>
+      <div class="step-arrow"></div>
+      <div class="step">Send Staggered<span class="tool-badge">send_followup.py</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Section 3: Command Reference ──────── -->
+<div class="section-header">Command Reference</div>
+<div class="cmd-container" id="cmd-ref"></div>
+
+<script>
+// ── Data for Command Reference ──────────────
+const COMMANDS = {
+  'Agents': [
+    {
+      id: 'pipeline-agent', label: 'Pipeline Agent', type: 'agent',
+      description: 'Lead pipeline execution (Haiku 4.5, every 30m)',
+      commands: [
+        { name: 'Agent workspace', cmd: 'ls ~/.openclaw/workspace-pipeline/' },
+        { name: 'Agent SOUL', cmd: 'cat ~/.openclaw/workspace-pipeline/SOUL.md' },
+        { name: "Today's memory", cmd: 'cat ~/.openclaw/workspace-pipeline/memory/$(date +%Y-%m-%d).md' },
+      ],
+      note: 'Model: Haiku 4.5 | Cron: every 30m (7am-10pm PST)'
+    },
+    {
+      id: 'copywriter-agent', label: 'Copywriter', type: 'agent',
+      description: 'V3 outreach email writing (Sonnet 4.6, on-demand)',
+      commands: [
+        { name: 'Agent workspace', cmd: 'ls ~/.openclaw/workspace-copywriter/' },
+        { name: 'Agent SOUL', cmd: 'cat ~/.openclaw/workspace-copywriter/SOUL.md' },
+        { name: "Today's memory", cmd: 'cat ~/.openclaw/workspace-copywriter/memory/$(date +%Y-%m-%d).md' },
+      ],
+      note: 'Model: Sonnet 4.6 | Trigger: on-demand via Kogy or Pipeline Agent'
+    },
+    {
+      id: 'linkedin-agent', label: 'LinkedIn Agent', type: 'agent',
+      description: 'Source 25 leads/day + write connection notes (Sonnet 4.6)',
+      commands: [
+        { name: 'Agent workspace', cmd: 'ls ~/.openclaw/workspace-linkedin/' },
+        { name: 'Agent SOUL', cmd: 'cat ~/.openclaw/workspace-linkedin/SOUL.md' },
+        { name: "Today's memory", cmd: 'cat ~/.openclaw/workspace-linkedin/memory/$(date +%Y-%m-%d).md' },
+      ],
+      note: 'Model: Sonnet 4.6 | Cron: daily 2pm PST'
+    },
+    {
+      id: 'newsletter-agent', label: 'Newsletter Agent', type: 'agent',
+      description: '"The Finance Signal" newsletter writer (Sonnet 4.6)',
+      commands: [
+        { name: 'Agent workspace', cmd: 'ls ~/.openclaw/workspace-newsletter/' },
+        { name: 'Agent SOUL', cmd: 'cat ~/.openclaw/workspace-newsletter/SOUL.md' },
+        { name: "Today's memory", cmd: 'cat ~/.openclaw/workspace-newsletter/memory/$(date +%Y-%m-%d).md' },
+      ],
+      note: 'Model: Sonnet 4.6 | Cron: daily 7am UTC'
+    },
+    {
+      id: 'followup-agent', label: 'Follow-up Agent', type: 'agent',
+      description: 'Follow-up sequence manager (Haiku 4.5, daily)',
+      commands: [
+        { name: 'Agent workspace', cmd: 'ls ~/.openclaw/workspace-followup/' },
+        { name: 'Agent SOUL', cmd: 'cat ~/.openclaw/workspace-followup/SOUL.md' },
+        { name: "Today's memory", cmd: 'cat ~/.openclaw/workspace-followup/memory/$(date +%Y-%m-%d).md' },
+      ],
+      note: 'Model: Haiku 4.5 | Cron: daily 5pm UTC'
+    },
+  ],
+  'Email & Outreach': [
+    {
+      id: 'send-email', label: 'send_email.py', type: 'tool',
+      description: 'Send emails via Google Apps Script proxy (multipart HTML + tracking)',
+      commands: [
+        { name: 'Send email', cmd: 'python3 tools/send_email.py send --sender kurt@leadership.kognitos.com --to <email> --subject "<subj>" --body "<body>"' },
+        { name: 'Send with CC', cmd: 'python3 tools/send_email.py send --sender kurt@leadership.kognitos.com --to <email> --subject "<subj>" --body "<body>" --cc erick@kognitos.com' },
+        { name: 'Read inbox', cmd: 'python3 tools/send_email.py read --user kurt@leadership.kognitos.com --query "is:unread" --limit 5' },
+      ]
+    },
+    {
+      id: 'send-followup', label: 'send_followup.py', type: 'tool',
+      description: 'Send follow-up emails (3-step cadence: initial, +3d, +7d)',
+      commands: [
+        { name: 'Preview follow-ups', cmd: 'python3 tools/send_followup.py --dry-run --limit 10' },
+        { name: 'Send follow-up #1', cmd: 'python3 tools/send_followup.py --followup 1 --limit 20' },
+        { name: 'Send follow-up #2', cmd: 'python3 tools/send_followup.py --followup 2 --limit 20' },
+        { name: 'Send both', cmd: 'python3 tools/send_followup.py --limit 20' },
+      ]
+    },
+    {
+      id: 'email-queue', label: 'email_queue.py', type: 'tool',
+      description: 'Queue emails for prime-time sending with staggered delays',
+      commands: [
+        { name: 'Queue stats', cmd: 'python3 tools/email_queue.py stats' },
+        { name: 'List queued', cmd: 'python3 tools/email_queue.py list' },
+        { name: 'Send queued (dry run)', cmd: 'python3 tools/email_queue.py send --dry-run' },
+        { name: 'Send queued', cmd: 'python3 tools/email_queue.py send --limit 20' },
+        { name: 'Clear queue', cmd: 'python3 tools/email_queue.py clear' },
+      ]
+    },
+    {
+      id: 'send-tier1-batch', label: 'send_tier1_batch.py', type: 'tool',
+      description: 'Batch send to tier 1 leads',
+      commands: [
+        { name: 'Run batch', cmd: 'python3 tools/send_tier1_batch.py' },
+      ]
+    },
+  ],
+  'Skills': [
+    {
+      id: 'ai-humanizer', label: 'ai-humanizer', type: 'skill',
+      description: 'Detect & remove AI writing patterns (24 detectors, 500+ words)',
+      commands: [
+        { name: 'Score text', cmd: 'echo "text" | node skills/ai-humanizer/src/cli.js score' },
+        { name: 'Analyze file', cmd: 'node skills/ai-humanizer/src/cli.js analyze <file>' },
+        { name: 'Humanize file', cmd: 'node skills/ai-humanizer/src/cli.js humanize --autofix -f <file>' },
+        { name: 'Full report', cmd: 'node skills/ai-humanizer/src/cli.js report <file>' },
+        { name: 'Suggestions', cmd: 'node skills/ai-humanizer/src/cli.js suggest <file>' },
+        { name: 'Stats only', cmd: 'node skills/ai-humanizer/src/cli.js stats <file>' },
+      ]
+    },
+    {
+      id: 'kognitos-runner', label: 'kognitos-runner', type: 'skill',
+      description: 'Trigger & monitor Kognitos automation processes',
+      commands: [
+        { name: 'List processes', cmd: 'python3 skills/kognitos-runner/scripts/list_processes.py' },
+        { name: 'Trigger run', cmd: "python3 skills/kognitos-runner/scripts/trigger_run.py --process-id <id> --name 'Run label' --inputs '{\"key\":\"val\"}' --stage production" },
+        { name: 'Poll run', cmd: 'python3 skills/kognitos-runner/scripts/poll_run.py --run-id <id> --timeout 300' },
+      ],
+      note: 'Requires: KOGNITOS_API_KEY + KOGNITOS_AGENT_ID env vars'
+    },
+    {
+      id: 'self-improving', label: 'self-improving', type: 'skill',
+      description: 'Memory that self-improves from corrections',
+      commands: [
+        { name: 'Memory stats', cmd: 'cat ~/self-improving/memory.md' },
+      ],
+      note: 'Tiered: HOT (memory.md) / WARM (projects/) / COLD (archive/)'
+    },
+    {
+      id: 'skillscanner', label: 'skillscanner', type: 'skill',
+      description: 'Security scan ClawHub skills via Gen Digital API',
+      commands: [
+        { name: 'Scan skill', cmd: "curl --request POST --url 'https://ai.gendigital.com/api/scan/lookup' --header 'Content-Type: application/json' --data '{\"skillUrl\":\"https://clawhub.ai/AUTHOR/SLUG\"}'" },
+      ],
+      note: 'SAFE = proceed, WARNING/DANGEROUS = do NOT use, analysis_pending = wait'
+    },
+  ],
+  'Pipelines': [
+    {
+      id: 'lead-pipeline', label: 'Lead Pipeline', type: 'pipeline',
+      description: 'HubSpot query, ICP filter, pain signals, outreach',
+      commands: [
+        { name: 'Config file', cmd: 'cat PIPELINE-INSTRUCTIONS.md' },
+      ],
+      note: 'Agent: pipeline | Cron: every 30m (7am-10pm PST) | Model: Haiku 4.5'
+    },
+    {
+      id: 'linkedin-pipeline', label: 'LinkedIn Pipeline', type: 'pipeline',
+      description: "Source 25 leads/day, write connection notes in Binny's voice",
+      commands: [
+        { name: 'Config file', cmd: 'cat LINKEDIN-PIPELINE-INSTRUCTIONS.md' },
+      ],
+      note: 'Agent: linkedin | Cron: daily 2pm PST | Model: Sonnet 4.6'
+    },
+    {
+      id: 'newsletter-pipeline', label: 'Newsletter Pipeline', type: 'pipeline',
+      description: '"The Finance Signal" — daily CFO newsletter',
+      commands: [
+        { name: 'Config file', cmd: 'cat NEWSLETTER-PIPELINE-INSTRUCTIONS.md' },
+      ],
+      note: 'Agent: newsletter | Cron: daily 7am UTC | Model: Sonnet 4.6'
+    },
+    {
+      id: 'followup-pipeline', label: 'Follow-up Pipeline', type: 'pipeline',
+      description: 'Automated follow-up cadence (3-step sequence)',
+      commands: [
+        { name: 'Run follow-ups', cmd: 'python3 tools/send_followup.py --limit 20' },
+      ],
+      note: 'Agent: followup | Cron: daily 5pm UTC | Model: Haiku 4.5'
+    },
+    {
+      id: 'sourcer-subagent', label: 'Sourcer (LinkedIn sub-agent)', type: 'subagent',
+      description: 'LinkedIn lead sourcer — spawned by LinkedIn Agent on Haiku',
+      commands: [
+        { name: 'Sourcer prompt', cmd: 'cat LINKEDIN-SOURCER-PROMPT.md' },
+      ]
+    },
+    {
+      id: 'writer-subagent', label: 'Writer (LinkedIn sub-agent)', type: 'subagent',
+      description: 'LinkedIn connection note writer — spawned by LinkedIn Agent on Sonnet',
+      commands: [
+        { name: 'Writer prompt', cmd: 'cat LINKEDIN-WRITER-PROMPT.md' },
+      ]
+    },
+  ],
+  'Tracking & Analytics': [
+    {
+      id: 'outreach-tracker', label: 'outreach_tracker.py', type: 'tool',
+      description: 'Track email sequences per lead (initial, follow-ups, replies, Knox clicks)',
+      commands: [
+        { name: 'Backfill from emails', cmd: 'python3 tools/outreach_tracker.py backfill' },
+        { name: 'Check stats', cmd: 'python3 tools/outreach_tracker.py stats' },
+        { name: 'Due follow-ups', cmd: 'python3 tools/outreach_tracker.py due 3' },
+        { name: 'Lead status', cmd: 'python3 tools/outreach_tracker.py status <email>' },
+      ]
+    },
+    {
+      id: 'engagement-tracker', label: 'engagement_tracker.py', type: 'tool',
+      description: 'Track engagement metrics (opens, clicks, replies)',
+      commands: [
+        { name: 'Engagement report', cmd: 'python3 tools/engagement_tracker.py report' },
+      ]
+    },
+    {
+      id: 'signal-poll', label: 'signal-poll/', type: 'tool',
+      description: 'Newsletter poll system (Vercel edge functions + Supabase)',
+      commands: [
+        { name: 'Generate poll URL', cmd: "python3 -c \"from tools.signal_poll.inject_poll_urls import generate_poll_url; print(generate_poll_url('003', 'A', 'email@example.com'))\"" },
+      ],
+      note: 'Deployed on Vercel. vote-handler.js + results-handler.js'
+    },
+  ],
+};
+
+// ── Badge colors ─────────────────────────────
+const BADGE_COLORS = {
+  agent: 'var(--accent-subagent)',
+  skill: 'var(--accent-skill)',
+  tool: 'var(--accent-tool)',
+  pipeline: 'var(--accent-pipeline)',
+  subagent: 'var(--accent-subagent)',
+};
+
+// ── Render Command Reference ─────────────────
+function renderCommandRef() {
+  const container = document.getElementById('cmd-ref');
+  let html = '';
+
+  Object.entries(COMMANDS).forEach(([catLabel, nodes]) => {
+    html += `<div class="cmd-category">${escHtml(catLabel)}</div>`;
+    html += '<div class="cmd-grid">';
+    nodes.forEach(node => {
+      const color = BADGE_COLORS[node.type] || 'var(--accent-tool)';
+      const typeLabel = node.type === 'subagent' ? 'sub-agent' : node.type;
+      let cmdsHtml = '';
+      node.commands.forEach(c => {
+        cmdsHtml += `
+          <div class="cmd-row">
+            <code class="cmd-text" title="${escHtml(c.cmd)}">${escHtml(c.cmd)}</code>
+            <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px;margin-top:-2px;">${escHtml(c.name)}</div>
+        `;
+      });
+      const noteHtml = node.note ? `<div class="cmd-note">${escHtml(node.note)}</div>` : '';
+      html += `
+        <div class="cmd-card" data-node-id="${node.id}">
+          <div class="cmd-header">
+            <span class="cmd-name">${escHtml(node.label)}</span>
+            <span class="cmd-type-badge" style="background:${color};color:#fff">${typeLabel}</span>
+          </div>
+          <div class="cmd-desc">${escHtml(node.description)}</div>
+          ${cmdsHtml}
+          ${noteHtml}
+        </div>
+      `;
+    });
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ── Copy to Clipboard ────────────────────────
+function copyCmd(btn) {
+  const text = btn.previousElementSibling.textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => showCopied(btn)).catch(() => fallbackCopy(text, btn));
+  } else { fallbackCopy(text, btn); }
+}
+function fallbackCopy(text, btn) {
+  const ta = document.createElement('textarea'); ta.value = text;
+  ta.style.position = 'fixed'; ta.style.left = '-9999px';
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+  document.body.removeChild(ta); showCopied(btn);
+}
+function showCopied(btn) {
+  btn.textContent = 'Copied!'; btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+}
+
+// ── Scroll to Command ────────────────────────
+function scrollToCommand(nodeId) {
+  const target = document.querySelector(`.cmd-card[data-node-id="${nodeId}"]`);
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('flash');
+    setTimeout(() => target.classList.remove('flash'), 1200);
+  }
+}
+
+// ── Search / Filter ──────────────────────────
+let searchTimer = null;
+document.getElementById('search').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => filterWorkspace(this.value), 150);
+});
+
+function filterWorkspace(query) {
+  const q = query.toLowerCase().trim();
+
+  // Clear all
+  if (!q) {
+    document.querySelectorAll('.dimmed, .highlighted').forEach(el => el.classList.remove('dimmed', 'highlighted'));
+    return;
+  }
+
+  // CPO card
+  const cpoCard = document.querySelector('.cpo-card');
+  const cpoMatch = (cpoCard.dataset.search || '').includes(q) || cpoCard.textContent.toLowerCase().includes(q);
+  cpoCard.classList.toggle('dimmed', !cpoMatch);
+
+  // Agent cards
+  document.querySelectorAll('.agent-card').forEach(card => {
+    const match = (card.dataset.search || '').includes(q) || card.textContent.toLowerCase().includes(q);
+    card.classList.toggle('dimmed', !match);
+  });
+
+  // Resource cards
+  document.querySelectorAll('.resource-card').forEach(card => {
+    const match = (card.dataset.search || '').includes(q) || card.textContent.toLowerCase().includes(q);
+    card.classList.toggle('dimmed', !match);
+    card.classList.toggle('highlighted', match);
+  });
+
+  // Skill cards
+  document.querySelectorAll('.skill-card').forEach(card => {
+    const match = (card.dataset.search || '').includes(q) || card.textContent.toLowerCase().includes(q);
+    card.classList.toggle('dimmed', !match);
+    card.classList.toggle('highlighted', match);
+  });
+
+  // Pipeline flows
+  document.querySelectorAll('.pipeline-flow').forEach(flow => {
+    const match = flow.textContent.toLowerCase().includes(q);
+    flow.classList.toggle('dimmed', !match);
+  });
+
+  // Command cards
+  document.querySelectorAll('.cmd-card').forEach(card => {
+    const match = card.textContent.toLowerCase().includes(q);
+    card.classList.toggle('dimmed', !match);
+  });
+}
+
+// ── Init ─────────────────────────────────────
+renderCommandRef();
+</script>
+</body>
+</html>
