@@ -450,6 +450,52 @@
   }
 
   /* ══════════════════════════════════════════════
+     Automation Metrics
+     ══════════════════════════════════════════════ */
+  .metrics-wrap { padding: 0 0 12px; }
+  .metrics-tabs {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .metrics-tab {
+    padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--card); color: var(--fg); font-family: inherit;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .metrics-tab:hover { background: var(--hover); }
+  .metrics-tab.active {
+    background: var(--brand-15); border-color: var(--brand-25); color: oklch(0.25 0 0);
+  }
+  .dark .metrics-tab.active { background: var(--brand-40); color: oklch(0.95 0 0); }
+  .metrics-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+  }
+  .metric-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; transition: box-shadow 0.15s, opacity 0.2s;
+  }
+  .metric-card:hover { box-shadow: 0 4px 12px oklch(0 0 0 / 8%); }
+  .metric-card.dimmed { opacity: 0.15; }
+  .metric-label { font-size: 11px; color: var(--muted-fg); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .metric-value { font-size: 28px; font-weight: 700; color: var(--fg); line-height: 1.2; }
+  .metric-sub { font-size: 11px; color: var(--muted-fg); margin-top: 4px; }
+  .metric-trend {
+    display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 99px; margin-top: 8px;
+  }
+  .metric-trend.up { background: oklch(from var(--success) l c h / 12%); color: var(--success); }
+  .metric-trend.down { background: oklch(from var(--alt-red) l c h / 12%); color: var(--alt-red); }
+  .metric-trend.neutral { background: oklch(from var(--alt-gray) l c h / 15%); color: var(--muted-fg); }
+  .metric-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+  .metric-bar-fill { height: 100%; border-radius: 3px; background: var(--brand-25); transition: width 0.4s ease; }
+  .metric-breakdown { margin-top: 10px; font-size: 11px; }
+  .metric-breakdown-row {
+    display: flex; justify-content: space-between; padding: 3px 0;
+    border-bottom: 1px solid var(--border); color: var(--fg);
+  }
+  .metric-breakdown-row:last-child { border-bottom: none; }
+  .metric-breakdown-label { color: var(--muted-fg); }
+
+  /* ══════════════════════════════════════════════
      Legend
      ══════════════════════════════════════════════ */
   .legend { display: flex; gap: 14px; flex-wrap: wrap; }
@@ -530,7 +576,8 @@
     .step-arrow::after { right: auto; left: -5px; top: auto; bottom: 0; border: 5px solid transparent; border-top-color: var(--muted-fg); border-left-color: transparent; }
     .cmd-grid { grid-template-columns: 1fr; }
     .skills-grid { grid-template-columns: 1fr; }
-    .section-header, .cpo-wrap, .skills-grid, .pipelines-wrap, .cmd-wrap, .team-grid, .org-chart { padding-left: 16px; padding-right: 16px; }
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    .section-header, .cpo-wrap, .skills-grid, .pipelines-wrap, .cmd-wrap, .metrics-wrap, .team-grid, .org-chart { padding-left: 16px; padding-right: 16px; }
     .org-chart { overflow-x: visible; }
     .org-branches { flex-direction: column; align-items: flex-start; padding-left: 24px; }
     .org-branches::before { display: none; }
@@ -540,7 +587,10 @@
     /* vertical trunk running alongside all leaves */
     .org-branches { position: relative; padding-left: 24px; border-left: 2px solid var(--border); margin-left: 0; gap: 10px; }
   }
-  @media (max-width: 500px) { .team-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 500px) {
+    .team-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -854,6 +904,17 @@
   </div>
 </div>
 
+<!-- ══ Automation Metrics ════════════════════ -->
+<div class="section-header">Automation Metrics</div>
+<div class="metrics-wrap">
+  <div class="metrics-tabs">
+    <button class="metrics-tab active" onclick="switchMetricsTab('outreach')">Outreach</button>
+    <button class="metrics-tab" onclick="switchMetricsTab('leadgen')">Lead Gen</button>
+    <button class="metrics-tab" onclick="switchMetricsTab('meetings')">Meetings<span id="meetings-live-badge" style="display:none; margin-left:6px; font-size:0.7rem; color:var(--success); font-weight:600;">(live)</span></button>
+  </div>
+  <div class="metrics-grid" id="metrics-content"></div>
+</div>
+
 <!-- ══ Command Reference ═════════════════════ -->
 <div class="section-header">Command Reference</div>
 <div class="cmd-wrap" id="cmd-ref"></div>
@@ -996,6 +1057,70 @@ const COMMANDS = {
   ],
 };
 
+const METRICS = {
+  outreach: [
+    { id: 'm-emails-sent', label: 'Emails Sent', value: '2,847', sub: 'Total outreach emails sent to date', trend: '+12% vs last month', trendDir: 'up', search: 'emails sent outreach total' },
+    { id: 'm-emails-week', label: 'Emails This Week', value: '214', sub: 'Sent Mon–Fri this week', trend: '+8% vs last week', trendDir: 'up', search: 'emails this week weekly' },
+    { id: 'm-open-rate', label: 'Open Rate', value: '62%', sub: 'Unique opens / delivered', trend: '+3.1pp vs last month', trendDir: 'up', bar: 62, search: 'open rate opens engagement' },
+    { id: 'm-reply-rate', label: 'Reply Rate', value: '8.4%', sub: 'Replies / delivered', trend: '+1.2pp vs last month', trendDir: 'up', bar: 8.4, search: 'reply rate replies response' },
+    { id: 'm-bounce-rate', label: 'Bounce Rate', value: '2.1%', sub: 'Hard + soft bounces', trend: '-0.3pp vs last month', trendDir: 'up', bar: 2.1, search: 'bounce rate bounces deliverability' },
+    { id: 'm-active-sequences', label: 'Active Sequences', value: '18', sub: 'Currently running follow-up sequences', trend: 'Steady', trendDir: 'neutral', search: 'active sequences followup cadence' },
+  ],
+  leadgen: [
+    { id: 'm-total-leads', label: 'Total Leads', value: '1,423', sub: 'All sourced leads in pipeline', trend: '+19% vs last month', trendDir: 'up', search: 'total leads pipeline sourced' },
+    { id: 'm-icp-match', label: 'ICP Match Rate', value: '41%', sub: 'Leads matching Ideal Customer Profile', trend: '+5pp vs last month', trendDir: 'up', bar: 41, search: 'icp match rate ideal customer profile' },
+    { id: 'm-hot-leads', label: 'Hot Leads Detected', value: '87', sub: 'High-intent signals detected this month', trend: '+23% vs last month', trendDir: 'up', search: 'hot leads intent signals detected' },
+    { id: 'm-leads-source', label: 'Leads by Source', value: '3 channels', sub: 'Breakdown by acquisition channel', trend: 'This month', trendDir: 'neutral', search: 'leads source channel hubspot linkedin direct',
+      breakdown: [
+        { label: 'HubSpot', value: '612 (43%)' },
+        { label: 'LinkedIn', value: '534 (37.5%)' },
+        { label: 'Direct / Inbound', value: '277 (19.5%)' },
+      ] },
+    { id: 'm-lead-email-conv', label: 'Lead-to-Email Conversion', value: '67%', sub: 'Leads that received at least one email', trend: '+4pp vs last month', trendDir: 'up', bar: 67, search: 'lead email conversion outreach funnel' },
+  ],
+  meetings: [
+    { id: 'm-meetings-booked', label: 'Meetings Booked', value: '142', sub: 'Total meetings booked this month', trend: '+28% vs last month', trendDir: 'up', search: 'meetings booked total scheduled' },
+    { id: 'm-meetings-week', label: 'Meetings This Week', value: '12', sub: 'Booked Mon–Fri this week', trend: '+3 vs last week', trendDir: 'up', search: 'meetings this week weekly' },
+    { id: 'm-show-rate', label: 'Show Rate', value: '74%', sub: 'Attended / booked', trend: '-2pp vs last month', trendDir: 'down', bar: 74, search: 'show rate attendance no-show' },
+    { id: 'm-pipeline-value', label: 'Pipeline Value', value: '$1.2M', sub: 'Total value of meeting-generated pipeline', trend: '+$180K vs last month', trendDir: 'up', search: 'pipeline value revenue dollar amount' },
+    { id: 'm-avg-meetings', label: 'Avg Meetings / Week', value: '34', sub: 'Rolling 4-week average', trend: 'Steady', trendDir: 'neutral', search: 'average meetings per week rolling' },
+  ],
+};
+
+let activeMetricsTab = 'outreach';
+
+function switchMetricsTab(tab) {
+  activeMetricsTab = tab;
+  document.querySelectorAll('.metrics-tab').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().replaceAll(' ', '') === tab));
+  renderMetrics();
+  const q = document.getElementById('search').value;
+  if (q) filter(q);
+}
+
+function renderMetrics() {
+  const el = document.getElementById('metrics-content');
+  const items = METRICS[activeMetricsTab] || [];
+  el.innerHTML = items.map(m => {
+    let html = `<div class="metric-card" data-search="${esc(m.search)}">`;
+    html += `<div class="metric-label">${esc(m.label)}</div>`;
+    html += `<div class="metric-value">${esc(m.value)}</div>`;
+    html += `<div class="metric-sub">${esc(m.sub)}</div>`;
+    html += `<span class="metric-trend ${m.trendDir}">${esc(m.trend)}</span>`;
+    if (m.bar != null) {
+      html += `<div class="metric-bar"><div class="metric-bar-fill" style="width:${m.bar}%"></div></div>`;
+    }
+    if (m.breakdown) {
+      html += '<div class="metric-breakdown">';
+      m.breakdown.forEach(r => {
+        html += `<div class="metric-breakdown-row"><span class="metric-breakdown-label">${esc(r.label)}</span><span>${esc(r.value)}</span></div>`;
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }).join('');
+}
+
 const BADGE_MAP = {
   agent: 'badge-agent', skill: 'badge-skill', tool: 'badge-tool',
   pipeline: 'badge-pipeline', subagent: 'badge-subagent',
@@ -1061,6 +1186,7 @@ function filter(q) {
   document.querySelectorAll('.res-card').forEach(c => { const hit = m(c); c.classList.toggle('dimmed', !hit); c.classList.toggle('highlighted', hit); });
   document.querySelectorAll('.skill-card').forEach(c => { const hit = m(c); c.classList.toggle('dimmed', !hit); c.classList.toggle('highlighted', hit); });
   document.querySelectorAll('.pipeline-card').forEach(c => c.classList.toggle('dimmed', !m(c)));
+  document.querySelectorAll('.metric-card').forEach(c => c.classList.toggle('dimmed', !m(c)));
   document.querySelectorAll('.cmd-card').forEach(c => c.classList.toggle('dimmed', !m(c)));
 }
 
@@ -1075,6 +1201,38 @@ function scrollToAgent(agent) {
 }
 
 renderCommandRef();
+renderMetrics();
+
+async function loadMeetingsMetrics() {
+  try {
+    const resp = await fetch('meetings_metrics.json');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (!data.metrics || !Array.isArray(data.metrics)) return;
+    METRICS.meetings = data.metrics;
+    // Show "(live)" badge
+    const badge = document.getElementById('meetings-live-badge');
+    if (badge) badge.style.display = 'inline';
+    // Show "Last updated" timestamp if present
+    if (data.generatedAt) {
+      let ts;
+      try { ts = new Date(data.generatedAt).toLocaleString(); } catch(e) { ts = data.generatedAt; }
+      const grid = document.getElementById('metrics-content');
+      if (!document.getElementById('meetings-updated-ts')) {
+        const el = document.createElement('div');
+        el.id = 'meetings-updated-ts';
+        el.style.cssText = 'grid-column:1/-1;text-align:right;font-size:0.75rem;color:var(--alt-gray);padding:0.25rem 0.5rem;';
+        el.textContent = 'Last updated: ' + ts;
+        grid.parentNode.insertBefore(el, grid.nextSibling);
+      }
+    }
+    // Re-render if meetings tab is active
+    if (activeMetricsTab === 'meetings') renderMetrics();
+  } catch(e) {
+    // Fetch failed (file missing, CORS, parse error) — keep hardcoded fallback
+  }
+}
+loadMeetingsMetrics();
 </script>
 </body>
 </html>
